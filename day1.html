@@ -657,7 +657,7 @@ function showInfoCard() {
     </div>
 
     <div class="f-group">
-      <label class="f-label">Place of Birth <span class="f-note">(if known)</span></label>
+      <label class="f-label">Place of Birth</label>
       <input id="ic-loc" type="text" ${locAttr} placeholder="City, State, Country" autocomplete="off">
     </div>
 
@@ -682,8 +682,9 @@ async function submitInfoCard() {
   const errEl = document.getElementById('ic-err');
   const btn   = document.querySelector('#info-card .card-btn');
 
-  if (!name || !email) {
-    errEl.textContent = 'Please enter your first name and email to continue.';
+  const loc = v('ic-loc').trim();
+  if (!name || !email || !loc) {
+    errEl.textContent = 'Please enter your first name, email, and place of birth to continue.';
     errEl.classList.add('show');
     return;
   }
@@ -716,7 +717,7 @@ async function submitInfoCard() {
   F.email          = email;
   F.date_of_birth  = dob;
   F.time_of_birth  = tob;
-  F.place_of_birth = v('ic-loc').trim();
+  F.place_of_birth = loc;
 
   removeCard('info-card');
   addMsg('out', 'I\u2019m ready.');
@@ -848,10 +849,32 @@ function parseParams() {
   return {
     name:  p.get('name')  || '',
     email: p.get('email') || '',
-    dob:   p.get('dob')   || '',
-    tob:   p.get('tob')   || '',
+    dob:   normalizeDob(p.get('dob')  || ''),
+    tob:   normalizeTob(p.get('tob')  || ''),
     loc:   p.get('loc')   || '',
   };
+}
+
+// MM/DD/YYYY or M/D/YYYY → YYYY-MM-DD (passes through if already ISO)
+function normalizeDob(s) {
+  if (!s) return '';
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  return s;
+}
+
+// "11 AM CDT", "2:30 PM", "11:00 AM" → HH:MM (passes through if already HH:MM)
+function normalizeTob(s) {
+  if (!s) return '';
+  const m = s.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
+  if (m) {
+    let h = parseInt(m[1], 10);
+    const min = m[2] || '00';
+    if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+    if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+    return `${String(h).padStart(2,'0')}:${min}`;
+  }
+  return s;
 }
 
 function setDot(idx) {
