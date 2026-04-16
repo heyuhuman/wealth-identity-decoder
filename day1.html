@@ -529,10 +529,11 @@ async function checkPurchase(email) {
 // ════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
   P = parseParams();
-  F.email         = P.email;
-  F.name          = P.name;
-  F.date_of_birth = P.dob;
-  F.time_of_birth = P.tob;
+  F.email          = P.email;
+  F.name           = P.name;
+  F.date_of_birth  = P.dob;
+  F.time_of_birth  = P.tob;
+  F.place_of_birth = P.loc;
 
   // If email is in URL params, validate purchase before showing anything
   if (P.email) {
@@ -619,6 +620,7 @@ function showInfoCard() {
     : `class="f-input"`;
   const dobAttr     = P.dob   ? `value="${esc(P.dob)}"   class="f-input pre"` : `class="f-input"`;
   const tobAttr     = P.tob   ? `value="${esc(P.tob)}"   class="f-input pre"` : `class="f-input"`;
+  const locAttr     = P.loc   ? `value="${esc(P.loc)}"   class="f-input pre"` : `class="f-input"`;
 
   card.innerHTML = `
     <span class="card-label">Before we begin &mdash; just a few details</span>
@@ -629,7 +631,7 @@ function showInfoCard() {
     </div>
 
     <div class="f-group">
-      <label class="f-label">Email ${emailLocked ? '' : ''}</label>
+      <label class="f-label">Email</label>
       <input id="ic-email" type="email" ${emailAttr} placeholder="Your email address" autocomplete="email">
     </div>
 
@@ -644,6 +646,11 @@ function showInfoCard() {
       </div>
     </div>
 
+    <div class="f-group">
+      <label class="f-label">Place of Birth <span class="f-note">(if known)</span></label>
+      <input id="ic-loc" type="text" ${locAttr} placeholder="City, State, Country" autocomplete="off">
+    </div>
+
     <button class="card-btn" onclick="submitInfoCard()">Let&rsquo;s Begin &rarr;</button>
     <div class="card-error" id="ic-err">Please enter your first name and email to continue.</div>
   `;
@@ -651,7 +658,7 @@ function showInfoCard() {
   appendCard(card);
 
   // Remove prefill styling on edit
-  ['ic-name','ic-email','ic-dob','ic-tob'].forEach(id => {
+  ['ic-name','ic-email','ic-dob','ic-tob','ic-loc'].forEach(id => {
     const inp = document.getElementById(id);
     if (inp) inp.addEventListener('focus', () => inp.classList.remove('pre'));
   });
@@ -695,10 +702,11 @@ async function submitInfoCard() {
     btn.disabled    = false;
   }
 
-  F.name          = name;
-  F.email         = email;
-  F.date_of_birth = dob;
-  F.time_of_birth = tob;
+  F.name           = name;
+  F.email          = email;
+  F.date_of_birth  = dob;
+  F.time_of_birth  = tob;
+  F.place_of_birth = v('ic-loc').trim();
 
   // Show their name as user bubble
   removeCard('info-card');
@@ -826,7 +834,13 @@ async function handleRetry() {
 // ════════════════════════════════════════════════════════════════════
 function parseParams() {
   const p = new URLSearchParams(window.location.search);
-  return { name: p.get('name')||'', email: p.get('email')||'', dob: p.get('dob')||'', tob: p.get('tob')||'' };
+  return {
+    name:  p.get('name')  || '',
+    email: p.get('email') || '',
+    dob:   p.get('dob')   || '',
+    tob:   p.get('tob')   || '',
+    loc:   p.get('loc')   || '',
+  };
 }
 
 function setDot(idx) {
