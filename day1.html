@@ -458,23 +458,21 @@ function buildStages() {
       action: showInfoCard,
     },
 
-    // ── 1: Bridge (bubbles 3\u20135, after form) ──────────────────────────
+    // ── 1: Bridge (bubbles 3\u20134, after form) ──────────────────────────
     {
       msgs: [
-        `Most people show up to an event like this, feel inspired, and then wonder why nothing actually changes. It\u2019s because they never looked at what\u2019s running underneath. That\u2019s what this decoder does.`,
-        `In the next few minutes, I\u2019m going to help you see the patterns, the stories, and the blind spots around money that your conscious mind has learned to skip right over. Once you can see them \u2014 everything you hear in Day 2 is going to land on a completely different level.`,
-        `Honestly? The fact that you\u2019re here doing this before Day 2 means you\u2019re not just attending this event \u2014 you\u2019re actually using it.`,
+        `Most people show up to an event like this, feel inspired, and then wonder why nothing actually changes. It\u2019s because they never looked at what\u2019s running underneath. <em>That\u2019s what this decoder does.</em>`,
+        `In the next few minutes, I\u2019m going to help you see the patterns, the stories, and the blind spots around money that your conscious mind has learned to skip right over. Once you can see them \u2014 <em>everything you hear in Day 2 is going to land on a completely different level.</em>`,
       ],
       action: () => runStage(2),
     },
 
-    // ── 2: Q1 \u2014 Current Money Reality (bubbles 6\u20139) ───────────────────
+    // ── 2: Q1 \u2014 Current Money Reality (bubbles 5\u20137) ───────────────────
     {
       msgs: [
         `Okay ${formFirst}, let\u2019s get into it.`,
-        `I want you to think about your relationship with money right now \u2014 not the version you\u2019re working toward, just what\u2019s actually real for you today. What\u2019s the most honest thing you can say about it?`,
-        `Say it like you\u2019d say it to a friend. Don\u2019t clean it up.`,
-        `Quick tip \u2014 if you\u2019re on your phone, use voice to text. It tends to come out more authentic and unfiltered, which means your decode will be way more accurate.`,
+        `I want you to think about your relationship with money right now \u2014 not the version you\u2019re working toward, just <em>what\u2019s actually real for you today.</em> What\u2019s the most honest thing you can say about it?`,
+        `PRO TIP: <em>Say it like you\u2019d say it to a friend.</em> Don\u2019t clean it up. If you\u2019re on your phone, use voice to text. It tends to come out more authentic and unfiltered, which means your decode will be way more accurate.`,
       ],
       action: () => openInput('old_money_identity', 'Say it like you\u2019d say it to a friend\u2026', false, 0),
     },
