@@ -686,10 +686,8 @@ async function submitInfoCard() {
     }
 
     if (!valid) {
-      errEl.textContent = 'We weren\u2019t able to verify a purchase for this email. Please use the email address you purchased with, or visit salespage.com to get access.';
-      errEl.classList.add('show');
-      btn.textContent = 'Let\u2019s Begin \u2192';
-      btn.disabled    = false;
+      removeCard('info-card');
+      document.getElementById('screen-locked').style.display = 'flex';
       return;
     }
 
