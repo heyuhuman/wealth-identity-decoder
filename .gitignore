@@ -1,0 +1,10 @@
+.env
+credentials.json
+token.json
+token_gmail.json
+.tmp/
+.venv/
+__pycache__/
+*.pyc
+
+.vercel
