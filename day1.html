@@ -444,66 +444,78 @@ let isFinal   = false;    // true on Q6
 // Stages are built at runtime so we can use collected name.
 
 function buildStages() {
-  const name = F.name ? `, ${F.name.split(' ')[0]}` : '';
+  const urlFirst  = P.name ? P.name.split(' ')[0] : '';
+  const formFirst = F.name ? F.name.split(' ')[0] : '';
 
   return [
 
-    // ── 0: Welcome ──────────────────────────────────────────────────
+    // ── 0: Welcome (before form) ─────────────────────────────────────
     {
       msgs: [
-        `Welcome to the Wealth Identity Decoder.`,
-        `What you're about to do is not journaling. It's not a quiz. It's a <em>decode</em>.`,
-        `The questions I'm going to ask are designed to surface what your conscious mind has learned not to see — the patterns, the programs, the moments that quietly built your entire relationship with money.`,
-        `Answer honestly. Don't edit yourself. I read underneath the words.`,
+        urlFirst ? `Hey ${urlFirst}. I\u2019m so glad you\u2019re here.` : `Hey, I\u2019m so glad you\u2019re here.`,
+        `You just experienced Day 1 of the Wealth Identity Shift \u2014 and before you go into Day 2, I want you to do this.`,
       ],
       action: showInfoCard,
     },
 
-    // ── 1: Q2 — Current Money Reality ───────────────────────────────
+    // ── 1: Bridge (bubbles 3\u20135, after form) ──────────────────────────
     {
       msgs: [
-        `Let's start with what's real right now.`,
-        `When you look at your relationship with money RIGHT NOW — not how you want it to be, but what you actually see — what is the most honest thing you can say about it?`,
-        `Don't edit yourself. Write what is actually true.`,
+        `Most people show up to an event like this, feel inspired, and then wonder why nothing actually changes. It\u2019s because they never looked at what\u2019s running underneath. That\u2019s what this decoder does.`,
+        `In the next few minutes, I\u2019m going to help you see the patterns, the stories, and the blind spots around money that your conscious mind has learned to skip right over. Once you can see them \u2014 everything you hear in Day 2 is going to land on a completely different level.`,
+        `Honestly? The fact that you\u2019re here doing this before Day 2 means you\u2019re not just attending this event \u2014 you\u2019re actually using it.`,
       ],
-      action: () => openInput('old_money_identity', 'The most honest thing I can say about my relationship with money right now is...', false, 0),
+      action: () => runStage(2),
     },
 
-    // ── 2: Q3 — New Identity ─────────────────────────────────────────
+    // ── 2: Q1 \u2014 Current Money Reality (bubbles 6\u20139) ───────────────────
     {
       msgs: [
-        `Now let's go to where you want to be.`,
-        `Describe the version of you who has already shifted. What does her relationship with money look and feel like? What is different about her day-to-day life?`,
+        `Okay ${formFirst}, let\u2019s get into it.`,
+        `I want you to think about your relationship with money right now \u2014 not the version you\u2019re working toward, just what\u2019s actually real for you today. What\u2019s the most honest thing you can say about it?`,
+        `Say it like you\u2019d say it to a friend. Don\u2019t clean it up.`,
+        `Quick tip \u2014 if you\u2019re on your phone, use voice to text. It tends to come out more authentic and unfiltered, which means your decode will be way more accurate.`,
       ],
-      action: () => openInput('new_wealth_identity', 'The version of me who has already shifted...', false, 1),
+      action: () => openInput('old_money_identity', 'Say it like you\u2019d say it to a friend\u2026', false, 0),
     },
 
-    // ── 3: Q4 — Childhood ────────────────────────────────────────────
+    // ── 3: Q2 \u2014 New Identity (bubbles 10\u201311) ──────────────────────────
     {
       msgs: [
-        `Good. Now we go back.`,
-        `Growing up, money in your home was...\n\nFinish that sentence however feels true. There are no wrong answers here.`,
+        `Thanks for sharing that. Let\u2019s take it even deeper.`,
+        `Now I want you to show me the other side. Picture the version of you who has already shifted \u2014 she\u2019s on the other side of this. What does her life with money actually look and feel like day to day?`,
       ],
-      action: () => openInput('childhood_money_environment', '...something we never talked about / ...always a source of tension / ...', false, 2),
+      action: () => openInput('new_wealth_identity', 'The version of me who has already shifted\u2026', false, 1),
     },
 
-    // ── 4: Q5 — Earliest Message ─────────────────────────────────────
+    // ── 4: Q3 \u2014 Childhood (bubbles 12\u201315) ──────────────────────────────
     {
       msgs: [
-        `What is the earliest message you received about money, success, or what you had to DO to be loved, safe, or enough?`,
-        `It might have been spoken out loud. It might have just been what you absorbed from watching the adults around you.`,
+        `I love that. Hold onto her.`,
+        `Now I want to go back for a second \u2014 because this is where it usually starts.`,
+        `Growing up, money in your home was\u2026`,
+        `Just finish that sentence. First thing that comes up.`,
       ],
-      action: () => openInput('earliest_money_message', 'The earliest message I absorbed was...', false, 3),
+      action: () => openInput('childhood_money_environment', 'Growing up, money in my home was\u2026', false, 2),
     },
 
-    // ── 5: Q6 — Pattern ──────────────────────────────────────────────
+    // ── 5: Q4 \u2014 Earliest Message (bubbles 16\u201317) ──────────────────────
     {
       msgs: [
-        `Last one.`,
-        `Is there a pattern in your financial life that keeps showing up no matter how hard you work or how much you learn? Something that feels almost like it has a mind of its own?`,
-        `Describe it.`,
+        `And what\u2019s the earliest message you picked up about money \u2014 or about what you had to do or be to feel safe, loved, or like enough?`,
+        `It doesn\u2019t have to be something someone said out loud. Sometimes it\u2019s just something you watched and absorbed.`,
       ],
-      action: () => openInput('recurring_pattern', 'The pattern that keeps showing up is...', true, 4),
+      action: () => openInput('earliest_money_message', 'The earliest message I absorbed was\u2026', false, 3),
+    },
+
+    // ── 6: Q5 \u2014 Pattern (bubbles 18\u201320) ──────────────────────────────
+    {
+      msgs: [
+        `One more.`,
+        `Is there a pattern that keeps showing up in your financial life \u2014 no matter how hard you work or how much you learn? Something that almost feels like it has a mind of its own?`,
+        `What does it look like when it shows up?`,
+      ],
+      action: () => openInput('recurring_pattern', 'The pattern that keeps showing up is\u2026', true, 4),
     },
 
   ];
@@ -623,7 +635,7 @@ function showInfoCard() {
   const locAttr     = P.loc   ? `value="${esc(P.loc)}"   class="f-input pre"` : `class="f-input"`;
 
   card.innerHTML = `
-    <span class="card-label">Before we begin &mdash; just a few details</span>
+    <span class="card-label">Before we dive in, let&rsquo;s just confirm your details.</span>
 
     <div class="f-group">
       <label class="f-label">First Name</label>
@@ -708,9 +720,8 @@ async function submitInfoCard() {
   F.time_of_birth  = tob;
   F.place_of_birth = v('ic-loc').trim();
 
-  // Show their name as user bubble
   removeCard('info-card');
-  addMsg('out', name);
+  addMsg('out', 'I\u2019m ready.');
   scrollDown();
 
   setTimeout(() => runStage(1), 400);
@@ -797,11 +808,13 @@ async function doSubmit() {
 
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${responseText}`);
 
-    // TY messages
-    await say(`You did the work${F.name ? `, ${F.name.split(' ')[0]}` : ''}. That matters.`);
-    await say(`What you wrote here is the raw material I need to name what you have not been able to see on your own.`);
-    await say(`<em>Your full Day 1 Wealth Identity Decode will arrive in your inbox within 15 minutes.</em> Read it before today's Day 2 training — it will change how you receive it.`);
-    await say(`The decode is coming. Let it land.`);
+    // TY messages (bubbles 22–26)
+    const fn = F.name ? F.name.split(' ')[0] : '';
+    await say(fn ? `${fn}, what you just shared? This is exactly what I needed.` : `What you just shared? This is exactly what I needed.`);
+    await say(`Most people never say this stuff out loud \u2014 even to themselves. The fact that you did means your decode is going to hit differently.`);
+    await say(`Your full Day 1 Wealth Identity Decode is on its way to your inbox right now. Read it before Day 2 \u2014 it\u2019s going to change how you receive everything.`);
+    await say(`Allow about 15 minutes for it to reach you \u2014 and keep an eye out for an email from Sara Longoria.`);
+    await say(`Let it land. You did good.`);
 
     // All dots filled
     for (let i = 0; i < 5; i++) setDot(i);
