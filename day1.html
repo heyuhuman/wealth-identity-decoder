@@ -387,8 +387,8 @@
   </div>
 
 <!-- ── Locked (no valid purchase) ─────────────────────────────────── -->
-<div class="screen" id="screen-locked">
-  <div class="inner" style="text-align:center; max-width:520px;">
+<div id="screen-locked" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+  <div style="max-width:480px; width:100%;">
     <div class="eyebrow" style="margin-bottom:28px;">Wealth Identity Shift &middot; Day 1</div>
     <div class="divider divider--center"></div>
     <h2 style="margin-bottom:28px;">This decoder is for<br><em>participants only.</em></h2>
@@ -397,7 +397,7 @@
       <p>If you believe this is an error, double-check the email you used at checkout and try the link from your confirmation email again.</p>
       <p>Ready to join the Wealth Identity Shift?</p>
     </div>
-    <a href="https://salespage.com" style="display:inline-block; margin-top:28px; background:var(--accent); color:white; font-family:'Lora',serif; font-size:14px; padding:13px 32px; border-radius:40px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='#b85a40'" onmouseout="this.style.background='var(--accent)'">Get Access &rarr;</a>
+    <a href="https://salespage.com" style="display:inline-block; margin-top:28px; background:var(--accent); color:white; font-family:'Lora',serif; font-size:14px; padding:13px 32px; border-radius:40px; text-decoration:none;">Get Access &rarr;</a>
   </div>
 </div>
 
@@ -544,7 +544,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (P.email) {
     const valid = await checkPurchase(P.email);
     if (!valid) {
-      showScreen('locked');
+      const loc = document.getElementById('screen-locked');
+      loc.style.display = 'flex';
       return;
     }
 
