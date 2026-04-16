@@ -408,7 +408,6 @@
 // ════════════════════════════════════════════════════════════════════
 const STORAGE_KEY     = 'wid_day1_submitted';
 const FORMSPARK_URL   = 'https://submit-form.com/qFF86rYPM';
-const VALIDATION_URL  = 'https://script.google.com/macros/s/AKfycbyC6gUFfl_-HL892Ig5kmRGslrKIVgzB01tmsPXAfKUvwJwl6-N6qbjfQIZ9T9I3PFadQ/exec';
 const MIN_CHARS       = 40;
 
 // Typing indicator duration: ~26ms per char, clamped to [700, 2400]ms
@@ -497,37 +496,18 @@ function buildStages() {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// PURCHASE VALIDATION (JSONP — works cross-origin without CORS issues)
+// PURCHASE VALIDATION — calls Vercel serverless proxy (/api/check-purchase)
 // ════════════════════════════════════════════════════════════════════
-function checkPurchase(email) {
-  return new Promise((resolve) => {
-    // If no validation URL configured yet, let everyone through
-    if (!VALIDATION_URL || VALIDATION_URL.startsWith('PASTE_')) {
-      resolve(true);
-      return;
-    }
-
-    const cb    = 'wid_check_' + Date.now();
-    const script = document.createElement('script');
-
-    // Fail open after 6s so real purchasers aren't blocked by a slow network
-    const timer = setTimeout(() => {
-      cleanup();
-      resolve(true);
-    }, 6000);
-
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cb];
-      if (script.parentNode) script.parentNode.removeChild(script);
-    }
-
-    window[cb] = (data) => { cleanup(); resolve(data.valid === true); };
-    script.onerror = () => { cleanup(); resolve(true); }; // fail open on script error
-
-    script.src = `${VALIDATION_URL}?email=${encodeURIComponent(email.toLowerCase().trim())}&callback=${cb}`;
-    document.head.appendChild(script);
-  });
+async function checkPurchase(email) {
+  if (!email) return true;
+  try {
+    const res  = await fetch(`/api/check-purchase?email=${encodeURIComponent(email.toLowerCase().trim())}`);
+    if (!res.ok) return true; // fail open on server error
+    const data = await res.json();
+    return data.valid === true;
+  } catch {
+    return true; // fail open on network error
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════

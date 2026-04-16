@@ -1,6 +1,4 @@
 {
-  "buildCommand": null,
-  "outputDirectory": ".",
   "framework": null,
   "rewrites": [
     { "source": "/day1", "destination": "/day1.html" },
