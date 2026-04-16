@@ -401,12 +401,25 @@
   </div>
 </div>
 
+<!-- ── Already submitted ──────────────────────────────────────────── -->
+<div id="screen-already-submitted" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+  <div style="max-width:480px; width:100%;">
+    <div class="eyebrow" style="margin-bottom:28px;">Wealth Identity Shift &middot; Day 1</div>
+    <div class="divider divider--center"></div>
+    <h2 style="margin-bottom:28px;">You&rsquo;ve already completed<br><em>Day 1.</em></h2>
+    <div class="ty-body">
+      <p>Your Wealth Identity Decode is on its way &mdash; check your inbox for your results.</p>
+      <p>It will take about 15 minutes for your personalized decoding report to be generated and received in your inbox.</p>
+      <p>If your report hasn&rsquo;t arrived, please email <a href="mailto:support@heyuhuman.com" style="color:var(--accent);">support@heyuhuman.com</a></p>
+    </div>
+  </div>
+</div>
+
 <!-- ── Script ─────────────────────────────────────────────────────── -->
 <script>
 // ════════════════════════════════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════════════════════════════════
-const STORAGE_KEY     = 'wid_day1_submitted';
 const FORMSPARK_URL   = 'https://submit-form.com/qFF86rYPM';
 const MIN_CHARS       = 40;
 
@@ -499,14 +512,14 @@ function buildStages() {
 // PURCHASE VALIDATION — calls Vercel serverless proxy (/api/check-purchase)
 // ════════════════════════════════════════════════════════════════════
 async function checkPurchase(email) {
-  if (!email) return true;
+  if (!email) return { valid: true, day1Submitted: false };
   try {
     const res  = await fetch(`/api/check-purchase?email=${encodeURIComponent(email.toLowerCase().trim())}`);
-    if (!res.ok) return true; // fail open on server error
+    if (!res.ok) return { valid: true, day1Submitted: false }; // fail open on server error
     const data = await res.json();
-    return data.valid === true;
+    return { valid: data.valid === true, day1Submitted: data.day1_submitted === true };
   } catch {
-    return true; // fail open on network error
+    return { valid: true, day1Submitted: false }; // fail open on network error
   }
 }
 
@@ -522,16 +535,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // If email is in URL params, validate purchase before showing anything
   if (P.email) {
-    const valid = await checkPurchase(P.email);
+    const { valid, day1Submitted } = await checkPurchase(P.email);
     if (!valid) {
-      const loc = document.getElementById('screen-locked');
-      loc.style.display = 'flex';
+      document.getElementById('screen-locked').style.display = 'flex';
       return;
     }
-
-    // Also check duplicate submission
-    if (getSubmitted().includes(P.email.toLowerCase())) {
-      showAlreadySubmitted();
+    if (day1Submitted) {
+      document.getElementById('screen-already-submitted').style.display = 'flex';
       return;
     }
   }
@@ -661,19 +671,18 @@ async function submitInfoCard() {
   }
   errEl.classList.remove('show');
 
-  // Duplicate check for manually typed emails
-  if (!P.email && getSubmitted().includes(email.toLowerCase())) {
-    removeCard('info-card');
-    showAlreadySubmitted();
-    return;
-  }
-
   // Validate purchase if email wasn't already checked from URL params
   if (!P.email) {
     btn.textContent = 'Checking access\u2026';
     btn.disabled    = true;
 
-    const valid = await checkPurchase(email);
+    const { valid, day1Submitted } = await checkPurchase(email);
+
+    if (day1Submitted) {
+      removeCard('info-card');
+      document.getElementById('screen-already-submitted').style.display = 'flex';
+      return;
+    }
 
     if (!valid) {
       errEl.textContent = 'We weren\u2019t able to verify a purchase for this email. Please use the email address you purchased with, or visit salespage.com to get access.';
@@ -781,8 +790,6 @@ async function doSubmit() {
 
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${responseText}`);
 
-    if (F.email) markSubmitted(F.email.toLowerCase());
-
     // TY messages
     await say(`You did the work${F.name ? `, ${F.name.split(' ')[0]}` : ''}. That matters.`);
     await say(`What you wrote here is the raw material I need to name what you have not been able to see on your own.`);
@@ -816,32 +823,11 @@ async function handleRetry() {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// ALREADY SUBMITTED
-// ════════════════════════════════════════════════════════════════════
-async function showAlreadySubmitted() {
-  await say(`It looks like you've already submitted your Day 1 decode.`);
-  await say(`Your full Wealth Identity Decode is either already in your inbox, or on its way. Check your email and get ready for Day 2.`);
-  for (let i = 0; i < 5; i++) setDot(i);
-}
-
-// ════════════════════════════════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════════════════════════════════
 function parseParams() {
   const p = new URLSearchParams(window.location.search);
   return { name: p.get('name')||'', email: p.get('email')||'', dob: p.get('dob')||'', tob: p.get('tob')||'' };
-}
-
-function getSubmitted() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
-}
-
-function markSubmitted(email) {
-  const list = getSubmitted();
-  if (!list.includes(email)) {
-    list.push(email);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch {}
-  }
 }
 
 function setDot(idx) {

@@ -24,7 +24,10 @@ export default async function handler(req, res) {
     );
 
     const data = await upstream.json();
-    return res.status(200).json({ valid: data.valid === true });
+    return res.status(200).json({
+      valid: data.valid === true,
+      day1_submitted: data.day1_submitted === true
+    });
 
   } catch (err) {
     // Fail open — don't block real purchasers due to a lookup error
