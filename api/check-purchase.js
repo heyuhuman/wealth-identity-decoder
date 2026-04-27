@@ -26,7 +26,8 @@ export default async function handler(req, res) {
     const data = await upstream.json();
     return res.status(200).json({
       valid: data.valid === true,
-      day1_submitted: data.day1_submitted === true
+      day1_submitted: data.day1_submitted === true,
+      day2_submitted: data.day2_submitted === true,
     });
 
   } catch (err) {

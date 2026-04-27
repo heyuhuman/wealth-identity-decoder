@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Wealth Identity Decoder &mdash; Day 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:           #e8ede5;
+      --white:        #ffffff;
+      --accent:       #3a6645;
+      --accent-dark:  #2d5235;
+      --accent-light: #d0ddd0;
+      --text:         #1a2620;
+      --muted:        #6b7d6b;
+      --border:       #c2d4c2;
+      --bubble-in:    #ffffff;
+      --bubble-out:   #dce6dc;
+      --header-bg:    #111c16;
+      --header-accent:#8dc4a0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      height: 100%;
+      height: -webkit-fill-available;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Lora', serif;
+      color: var(--text);
+      height: 100%;
+      height: -webkit-fill-available;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────────── */
+    .header {
+      background: var(--header-bg);
+      border-bottom: 1px solid #1e3028;
+      padding: 14px 20px 12px;
+      text-align: center;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .header-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      font-style: normal;
+      margin-bottom: 3px;
+    }
+
+    .header-title {
+      font-size: 17px;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--header-accent);
+      letter-spacing: 0.02em;
+    }
+
+    /* Progress dots */
+    .progress-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      transition: background 0.4s ease, transform 0.3s ease;
+    }
+
+    .dot.done {
+      background: var(--header-accent);
+      transform: scale(1.15);
+    }
+
+    /* ── Chat area ───────────────────────────────────────────────────── */
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 24px 16px 16px;
+    }
+
+    .chat-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── Bubbles ─────────────────────────────────────────────────────── */
+    .row {
+      display: flex;
+      animation: fadeUp 0.35s ease both;
+    }
+
+    .row--in  { justify-content: flex-start; }
+    .row--out { justify-content: flex-end; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble {
+      max-width: min(78%, 480px);
+      padding: 13px 17px;
+      font-size: 15.5px;
+      line-height: 1.72;
+      letter-spacing: 0.01em;
+    }
+
+    .bubble--in {
+      background: var(--white);
+      color: var(--text);
+      border-radius: 4px 18px 18px 18px;
+      border-left: 3px solid var(--accent);
+      box-shadow: 0 1px 6px rgba(58,102,69,0.10);
+    }
+
+    .bubble--in em { font-style: italic; color: var(--accent); }
+
+    .bubble--out {
+      background: var(--bubble-out);
+      color: var(--text);
+      border-radius: 18px 18px 4px 18px;
+      font-style: italic;
+    }
+
+    /* ── Typing indicator ────────────────────────────────────────────── */
+    .typing-wrap {
+      display: flex;
+      animation: fadeUp 0.2s ease both;
+    }
+
+    .typing-bubble {
+      background: var(--white);
+      border-radius: 4px 18px 18px 18px;
+      border-left: 3px solid var(--accent);
+      box-shadow: 0 1px 6px rgba(58,102,69,0.10);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .t-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      opacity: 0.6;
+      animation: tdot 1.3s infinite ease-in-out;
+    }
+
+    .t-dot:nth-child(2) { animation-delay: 0.18s; }
+    .t-dot:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes tdot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+      30%            { transform: translateY(-7px); opacity: 1; }
+    }
+
+    /* ── Action cards (inline in chat) ───────────────────────────────── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 20px;
+      animation: fadeUp 0.35s ease both;
+      max-width: 480px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    /* field inside card */
+    .f-group { margin-bottom: 16px; }
+    .f-group:last-of-type { margin-bottom: 20px; }
+
+    .f-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .f-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-family: 'Lora', serif;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .f-input:focus { border-color: var(--accent); }
+    .f-input.pre   { color: var(--muted); }
+    .f-input[readonly] { cursor: default; color: var(--muted); }
+
+    .card-btn {
+      display: inline-block;
+      background: var(--accent);
+      color: var(--white);
+      font-family: 'Lora', serif;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      padding: 11px 28px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .card-btn:hover { background: var(--accent-dark); }
+    .card-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .card-btn-outline {
+      display: inline-block;
+      background: transparent;
+      color: var(--accent);
+      font-family: 'Lora', serif;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      padding: 10px 28px;
+      border: 1.5px solid var(--accent);
+      border-radius: 40px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .card-btn-outline:hover { background: var(--accent); color: var(--white); }
+
+    .card-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .card-error {
+      font-size: 13px;
+      color: #c05050;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .card-error.show { display: block; }
+
+    /* ── Fixed input bar ─────────────────────────────────────────────── */
+    .input-bar {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 10px 12px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      flex-shrink: 0;
+      display: none;
+    }
+
+    .input-bar.visible { display: block; }
+
+    .input-bar-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .chat-ta {
+      flex: 1;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      padding: 11px 16px;
+      font-family: 'Lora', serif;
+      font-size: 15px;
+      color: var(--text);
+      resize: none;
+      min-height: 46px;
+      max-height: 150px;
+      line-height: 1.6;
+      outline: none;
+      transition: border-color 0.2s;
+      overflow-y: auto;
+    }
+
+    .chat-ta:focus { border-color: var(--accent); }
+
+    .chat-ta::placeholder {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .send-btn {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .send-btn:hover:not(:disabled) { background: var(--accent-dark); }
+
+    .send-btn svg { width: 17px; height: 17px; fill: white; }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
+      text-align: center;
+      margin-top: 5px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .hint.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <div class="header">
+    <div class="header-eyebrow">Wealth Identity Shift &middot; Day 2</div>
+    <div class="header-title">The Decoder</div>
+    <div class="progress-row" id="dots">
+      <div class="dot" id="d0"></div>
+      <div class="dot" id="d1"></div>
+      <div class="dot" id="d2"></div>
+      <div class="dot" id="d3"></div>
+    </div>
+  </div>
+
+  <!-- ── Chat ───────────────────────────────────────────────────────── -->
+  <div class="chat" id="chat">
+    <div class="chat-inner" id="feed"></div>
+  </div>
+
+  <!-- ── Input bar ──────────────────────────────────────────────────── -->
+  <div class="input-bar" id="input-bar">
+    <div class="input-bar-inner">
+      <textarea
+        id="ta"
+        class="chat-ta"
+        rows="1"
+        placeholder="Type your answer... (Shift+Enter for new line)"
+        oninput="onTaInput()"
+        onkeydown="onTaKey(event)"
+      ></textarea>
+      <button class="send-btn" id="send-btn" onclick="onSend()" disabled>
+        <svg viewBox="0 0 24 24"><path d="M2 21L23 12 2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <div class="hint" id="hint">Keep going &mdash; the decoder needs a little more depth here.</div>
+  </div>
+
+<!-- ── Locked (no valid purchase) ─────────────────────────────────── -->
+<div id="screen-locked" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+  <div style="max-width:420px; width:100%;">
+    <div style="font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Wealth Identity Shift &middot; 3 Day Event</div>
+    <div style="font-size:22px; font-weight:500; font-style:italic; color:var(--accent); letter-spacing:0.02em; margin-bottom:28px;">Day 2 Wealth Identity Decoder</div>
+    <div style="width:40px; height:1px; background:var(--border); margin:0 auto 28px;"></div>
+    <div style="font-size:17px; font-weight:500; color:var(--text); line-height:1.5; margin-bottom:20px;">This decoder is for<br>participants only.</div>
+    <div style="font-size:14px; line-height:1.8; color:var(--muted);">
+      <p style="margin-bottom:14px;">We weren&rsquo;t able to verify a purchase for this email address.</p>
+      <p style="margin-bottom:14px;">If you believe this is an error, please refresh the page and enter the email you used to purchase decoder access.</p>
+      <p>If you haven&rsquo;t purchased access yet, get instant access now&nbsp;&darr;</p>
+    </div>
+    <a href="https://www.becomewellresourced.com/ty-wealth-identity-decoder#decoder" style="display:inline-block; margin-top:24px; background:var(--accent); color:white; font-family:'Lora',serif; font-size:14px; letter-spacing:0.03em; padding:13px 32px; border-radius:40px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='var(--accent-dark)'" onmouseout="this.style.background='var(--accent)'">Get Instant Access &rarr;</a>
+  </div>
+</div>
+
+<!-- ── No Day 1 submission ─────────────────────────────────────────── -->
+<div id="screen-no-day1" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+  <div style="max-width:420px; width:100%;">
+    <div style="font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Wealth Identity Shift &middot; Day 2</div>
+    <div style="font-size:22px; font-weight:500; font-style:italic; color:var(--accent); letter-spacing:0.02em; margin-bottom:28px;">Day 2 Wealth Identity Decoder</div>
+    <div style="width:40px; height:1px; background:var(--border); margin:0 auto 28px;"></div>
+    <div style="font-size:17px; font-weight:500; color:var(--text); line-height:1.5; margin-bottom:20px;">We don&rsquo;t have your<br>Day 1 submission yet.</div>
+    <div style="font-size:14px; line-height:1.8; color:var(--muted); margin-bottom:24px;">
+      <p>Day 2 unlocks after you complete Day 1. Head there first &mdash; it only takes a few minutes.</p>
+    </div>
+    <a href="/day1" style="display:inline-block; background:var(--accent); color:white; font-family:'Lora',serif; font-size:14px; letter-spacing:0.03em; padding:13px 32px; border-radius:40px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='var(--accent-dark)'" onmouseout="this.style.background='var(--accent)'">Go to Day 1 Decoder &rarr;</a>
+  </div>
+</div>
+
+<!-- ── Already submitted Day 2 ────────────────────────────────────── -->
+<div id="screen-already-submitted" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+  <div style="max-width:480px; width:100%;">
+    <div style="font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:28px;">Wealth Identity Shift &middot; Day 2</div>
+    <div style="width:40px; height:1px; background:var(--border); margin:0 auto 28px;"></div>
+    <div style="font-size:24px; font-weight:500; color:var(--text); line-height:1.4; margin-bottom:28px;">You&rsquo;ve already completed<br><em style="color:var(--accent);">Day 2.</em></div>
+    <div style="font-size:14px; line-height:1.8; color:var(--muted);">
+      <p style="margin-bottom:14px;">Your Day 2 decode is on its way &mdash; check your inbox.</p>
+      <p style="margin-bottom:14px;">It will take about 15 minutes for your personalized report to arrive.</p>
+      <p>If your report hasn&rsquo;t arrived, please email <a href="mailto:support@heyuhuman.com" style="color:var(--accent);">support@heyuhuman.com</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Training not yet watched ───────────────────────────────────── -->
+<div id="screen-training-lock" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+  <div style="max-width:420px; width:100%;">
+    <div style="font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Wealth Identity Shift &middot; Day 2</div>
+    <div style="font-size:22px; font-weight:500; font-style:italic; color:var(--accent); letter-spacing:0.02em; margin-bottom:28px;">Day 2 Wealth Identity Decoder</div>
+    <div style="width:40px; height:1px; background:var(--border); margin:0 auto 28px;"></div>
+    <div style="font-size:17px; font-weight:500; color:var(--text); line-height:1.5; margin-bottom:20px;">Watch the training first.</div>
+    <div style="font-size:14px; line-height:1.8; color:var(--muted); margin-bottom:24px;">
+      <p>This decode is designed to work alongside the training, not before it. Head here to watch it first &mdash; then come back when you&rsquo;re ready.</p>
+    </div>
+    <a href="https://app.heyuhuman.com/spaces/23521449/content" style="display:inline-block; background:var(--accent); color:white; font-family:'Lora',serif; font-size:14px; letter-spacing:0.03em; padding:13px 32px; border-radius:40px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='var(--accent-dark)'" onmouseout="this.style.background='var(--accent)'">Watch the Day 2 Training &rarr;</a>
+  </div>
+</div>
+
+<!-- ── Script ─────────────────────────────────────────────────────── -->
+<script>
+// ════════════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════════════
+const FORMSPARK_URL = 'https://submit-form.com/O5jDHqYaQ';
+const MIN_CHARS     = 40;
+
+const typingMs = txt => Math.min(2400, Math.max(700, txt.length * 26));
+
+// ════════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════════
+let P       = {};     // URL params
+let F       = {};     // form data: { name, email, q1, q2, q3 }
+let stage   = 0;      // current stage index
+let field   = null;   // current textarea field key
+
+// ════════════════════════════════════════════════════════════════════
+// STAGE DEFINITIONS
+// ════════════════════════════════════════════════════════════════════
+function buildStages() {
+  const firstName = F.name ? F.name.split(' ')[0] : '';
+
+  return [
+
+    // ── 0: Training check ────────────────────────────────────────────
+    {
+      msgs: [
+        'One quick thing before we dive in — have you watched the Day 2 training yet?',
+      ],
+      action: showTrainingButtons,
+    },
+
+    // ── 1: Instructions ──────────────────────────────────────────────
+    {
+      msgs: [
+        'Good. Here’s what I want you to know before we start.',
+        'These three questions are designed to get beneath the surface… and the only thing that gets in the way of that is overthinking.',
+        'Think of the first thing that comes to mind. Not the polished answer. Not the one that sounds right.',
+        'The real one. Brutal honesty over analysis. Every time.',
+      ],
+      action: showReadyButton,
+    },
+
+    // ── 2: Q1 ────────────────────────────────────────────────────────
+    {
+      msgs: [
+        'When you imagine actually living your new wealth identity — where does it not feel safe? Where does something in you say <em>no</em>?',
+      ],
+      action: () => openInput('q1', 'The first place it doesn’t feel safe is…', 0),
+    },
+
+    // ── 3: Q2 ────────────────────────────────────────────────────────
+    {
+      msgs: [
+        'Stay with that for a second.',
+        'What do you think would actually happen if you let yourself have it? What’s the real fear underneath the <em>no</em> — not the surface answer, the one beneath it.',
+      ],
+      action: () => openInput('q2', 'What I’m actually afraid would happen is…', 1),
+    },
+
+    // ── 4: Q3 ────────────────────────────────────────────────────────
+    {
+      msgs: [
+        'Last one.',
+        'Where do you feel that fear in your body — chest, throat, stomach, somewhere else? And when have you felt that exact same feeling before, even if it had nothing to do with money?',
+      ],
+      action: () => openInput('q3', 'I feel it in my… and I’ve felt it before when…', 2),
+    },
+
+    // ── 5: Thank you + email confirm ─────────────────────────────────
+    {
+      msgs: [
+        firstName
+          ? `Thank you, ${firstName}. What you’ve just named is exactly what today is designed to work with.`
+          : 'Thank you. What you’ve just named is exactly what today is designed to work with.',
+        'The fear you described isn’t a sign something is wrong with you. It’s a sign your nervous system is doing exactly what it was wired to do — protect you from something that once felt genuinely dangerous. That protection was intelligent once. Today you start building something new.',
+        'Take what you just named into the room with you. What you’re about to experience in today’s training will land completely differently because of what you just surfaced.',
+      ],
+      action: async () => {
+        await new Promise(r => setTimeout(r, 1500));
+        await say('Your full Day 2 decode — including what your nervous system is actually protecting you from and what starts to shift it — will be in your inbox within 15 minutes. Make sure we have the right email for you.');
+        setDot(3);
+        showEmailCard();
+      },
+    },
+
+  ];
+}
+
+// ════════════════════════════════════════════════════════════════════
+// PURCHASE VALIDATION
+// ════════════════════════════════════════════════════════════════════
+async function checkPurchase(email) {
+  if (!email) return { valid: true, day1Submitted: false, day2Submitted: false };
+  try {
+    const res  = await fetch(`/api/check-purchase?email=${encodeURIComponent(email.toLowerCase().trim())}`);
+    if (!res.ok) return { valid: true, day1Submitted: false, day2Submitted: false };
+    const data = await res.json();
+    return {
+      valid:         data.valid === true,
+      day1Submitted: data.day1_submitted === true,
+      day2Submitted: data.day2_submitted === true,
+    };
+  } catch {
+    return { valid: true, day1Submitted: false, day2Submitted: false };
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  P = parseParams();
+
+  const firstName = P.name ? P.name.split(' ')[0] : '';
+
+  await say(firstName ? `Welcome back, ${firstName}!` : 'Welcome back!');
+  await say('Please enter your email to verify your access.');
+
+  showVerifyCard();
+});
+
+// ════════════════════════════════════════════════════════════════════
+// STAGE RUNNER
+// ════════════════════════════════════════════════════════════════════
+async function runStage(idx) {
+  stage = idx;
+  closeInput();
+
+  const stages = buildStages();
+  if (idx >= stages.length) return;
+
+  const s = stages[idx];
+
+  for (const msg of s.msgs) {
+    await say(msg);
+  }
+
+  s.action();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// SAY
+// ════════════════════════════════════════════════════════════════════
+function say(txt) {
+  return new Promise(resolve => {
+    const wrap = addTyping();
+    const ms   = typingMs(txt.replace(/<[^>]+>/g, ''));
+
+    setTimeout(() => {
+      wrap.remove();
+      addMsg('in', txt);
+      scrollDown();
+      resolve();
+    }, ms);
+  });
+}
+
+function addTyping() {
+  const wrap = el('div', 'typing-wrap');
+  const bub  = el('div', 'typing-bubble');
+  bub.innerHTML = '<div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>';
+  wrap.appendChild(bub);
+  feed().appendChild(wrap);
+  scrollDown();
+  return wrap;
+}
+
+function addMsg(dir, txt) {
+  const row = el('div', `row row--${dir}`);
+  const bub = el('div', `bubble bubble--${dir === 'in' ? 'in' : 'out'}`);
+  bub.innerHTML = txt.replace(/\n/g, '<br>');
+  row.appendChild(bub);
+  feed().appendChild(row);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// EMAIL VERIFY CARD
+// ════════════════════════════════════════════════════════════════════
+function showVerifyCard() {
+  const card = el('div', 'card');
+  card.id = 'verify-card';
+
+  const emailLocked = !!P.email;
+  const emailAttr   = emailLocked
+    ? `value="${esc(P.email)}" class="f-input pre" readonly`
+    : `class="f-input"`;
+
+  card.innerHTML = `
+    <div class="f-group">
+      <label class="f-label">Email</label>
+      <input id="vc-email" type="email" ${emailAttr} placeholder="Your email address" autocomplete="email">
+    </div>
+    <button class="card-btn" onclick="submitVerifyCard()">Verify Access &rarr;</button>
+    <div class="card-error" id="vc-err">Please enter your email address.</div>
+  `;
+
+  appendCard(card);
+
+  const inp = document.getElementById('vc-email');
+  if (inp) inp.addEventListener('focus', () => inp.classList.remove('pre'));
+}
+
+async function submitVerifyCard() {
+  const email = v('vc-email').trim();
+  const errEl = document.getElementById('vc-err');
+  const btn   = document.querySelector('#verify-card .card-btn');
+
+  if (!email) {
+    errEl.textContent = 'Please enter your email address.';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  btn.textContent = 'Checking…';
+  btn.disabled    = true;
+
+  const { valid, day1Submitted, day2Submitted } = await checkPurchase(email);
+
+  removeCard('verify-card');
+
+  if (!valid) {
+    document.getElementById('screen-locked').style.display = 'flex';
+    return;
+  }
+
+  if (!day1Submitted) {
+    document.getElementById('screen-no-day1').style.display = 'flex';
+    return;
+  }
+
+  if (day2Submitted) {
+    document.getElementById('screen-already-submitted').style.display = 'flex';
+    return;
+  }
+
+  F.email = email;
+  F.name  = P.name || '';
+
+  setTimeout(() => runStage(0), 300);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// TRAINING BUTTONS
+// ════════════════════════════════════════════════════════════════════
+function showTrainingButtons() {
+  const card = el('div', 'card');
+  card.id = 'training-card';
+  card.innerHTML = `
+    <div class="card-btns">
+      <button class="card-btn" onclick="onTraining(true)">Yes, I’ve watched it</button>
+      <button class="card-btn-outline" onclick="onTraining(false)">Not yet</button>
+    </div>
+  `;
+  appendCard(card);
+}
+
+function onTraining(watched) {
+  removeCard('training-card');
+  if (watched) {
+    addMsg('out', 'Yes, I’ve watched it.');
+    scrollDown();
+    setTimeout(() => runStage(1), 400);
+  } else {
+    addMsg('out', 'Not yet.');
+    scrollDown();
+    setTimeout(() => {
+      document.getElementById('screen-training-lock').style.display = 'flex';
+    }, 400);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// READY BUTTON
+// ════════════════════════════════════════════════════════════════════
+function showReadyButton() {
+  const card = el('div', 'card');
+  card.id = 'ready-card';
+  card.innerHTML = `
+    <button class="card-btn" onclick="onReady()">I’M READY!</button>
+  `;
+  appendCard(card);
+}
+
+function onReady() {
+  removeCard('ready-card');
+  addMsg('out', 'I’m ready.');
+  scrollDown();
+  setTimeout(() => runStage(2), 400);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// TEXTAREA INPUT
+// ════════════════════════════════════════════════════════════════════
+function openInput(fld, placeholder, dotIdx) {
+  field = fld;
+
+  const ta = document.getElementById('ta');
+  ta.placeholder = placeholder;
+  ta.value       = '';
+  ta.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('hint').classList.remove('show');
+  document.getElementById('input-bar').classList.add('visible');
+
+  setDot(dotIdx);
+  scrollDown();
+  setTimeout(() => { ta.focus({ preventScroll: true }); scrollDown(); }, 350);
+}
+
+function closeInput() {
+  document.getElementById('input-bar').classList.remove('visible');
+}
+
+function onTaInput() {
+  const ta  = document.getElementById('ta');
+  const btn = document.getElementById('send-btn');
+  const hnt = document.getElementById('hint');
+
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(150, ta.scrollHeight) + 'px';
+
+  const len = ta.value.trim().length;
+  btn.disabled = len < MIN_CHARS;
+  hnt.classList.toggle('show', len > 8 && len < MIN_CHARS);
+}
+
+function onTaKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (!document.getElementById('send-btn').disabled) onSend();
+  }
+}
+
+async function onSend() {
+  const ta  = document.getElementById('ta');
+  const ans = ta.value.trim();
+  if (ans.length < MIN_CHARS || !field) return;
+
+  F[field] = ans;
+  closeInput();
+  addMsg('out', ans);
+  scrollDown();
+
+  runStage(stage + 1);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// EMAIL CONFIRM CARD
+// ════════════════════════════════════════════════════════════════════
+function showEmailCard() {
+  const card = el('div', 'card');
+  card.id = 'email-card';
+
+  const emailVal = F.email ? esc(F.email) : '';
+  card.innerHTML = `
+    <span class="card-label">Confirm your email</span>
+    <div class="f-group">
+      <label class="f-label">Email</label>
+      <input id="ec-email" type="email" class="f-input${emailVal ? ' pre' : ''}" value="${emailVal}" placeholder="Your email address" autocomplete="email">
+    </div>
+    <button class="card-btn" onclick="submitEmailCard()">Confirm &amp; Send &rarr;</button>
+    <div class="card-error" id="ec-err">Please enter your email address.</div>
+  `;
+
+  appendCard(card);
+
+  const inp = document.getElementById('ec-email');
+  if (inp) inp.addEventListener('focus', () => inp.classList.remove('pre'));
+
+  scrollDown();
+}
+
+async function submitEmailCard() {
+  const email = v('ec-email').trim();
+  const errEl = document.getElementById('ec-err');
+
+  if (!email) {
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  F.email = email;
+  removeCard('email-card');
+
+  await doSubmit();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// SUBMIT
+// ════════════════════════════════════════════════════════════════════
+async function doSubmit() {
+  try {
+    const res = await fetch(FORMSPARK_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body:    JSON.stringify(F),
+    });
+
+    let responseText = '';
+    try { responseText = await res.clone().text(); } catch {}
+    console.log('Formspark status:', res.status, 'body:', responseText);
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${responseText}`);
+
+    await say('You’re all set. Your decode will be in your inbox within 15 minutes — look for an email from Sara Longoria.');
+
+    for (let i = 0; i < 4; i++) setDot(i);
+
+  } catch (err) {
+    console.error('Submit error:', err);
+    await say('Something went wrong on our end — your answers are safe. Tap the button below to try again.');
+    showRetryButton();
+  }
+}
+
+function showRetryButton() {
+  const card = el('div', 'card');
+  card.id = 'retry-card';
+  card.innerHTML = `
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px;font-style:italic;">Your responses are saved. This will attempt to resend them.</p>
+    <button class="card-btn" onclick="handleRetry()">Try Again &rarr;</button>
+  `;
+  appendCard(card);
+  scrollDown();
+}
+
+async function handleRetry() {
+  removeCard('retry-card');
+  await doSubmit();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════════════
+function parseParams() {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    name:  p.get('name')  || '',
+    email: p.get('email') || '',
+    dob:   normalizeDob(p.get('dob')  || ''),
+    tob:   normalizeTob(p.get('tob')  || ''),
+    loc:   p.get('loc')   || '',
+  };
+}
+
+function normalizeDob(s) {
+  if (!s) return '';
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  return s;
+}
+
+function normalizeTob(s) {
+  if (!s) return '';
+  const m = s.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
+  if (m) {
+    let h = parseInt(m[1], 10);
+    const min = m[2] || '00';
+    if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+    if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+    return `${String(h).padStart(2,'0')}:${min}`;
+  }
+  return s;
+}
+
+function setDot(idx) {
+  const d = document.getElementById('d' + idx);
+  if (d) d.classList.add('done');
+}
+
+function scrollDown() {
+  const chat = document.getElementById('chat');
+  setTimeout(() => chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }), 40);
+}
+
+function feed()         { return document.getElementById('feed'); }
+function el(tag, cls)   { const e = document.createElement(tag); e.className = cls; return e; }
+function v(id)          { return (document.getElementById(id)||{}).value || ''; }
+function esc(s)         { return s.replace(/"/g, '&quot;'); }
+
+function appendCard(card) {
+  const wrap = el('div', 'row row--in');
+  wrap.appendChild(card);
+  feed().appendChild(wrap);
+  scrollDown();
+}
+
+function removeCard(id) {
+  const c = document.getElementById(id);
+  if (c && c.parentElement) c.parentElement.remove();
+}
+</script>
+
+</body>
+</html>
