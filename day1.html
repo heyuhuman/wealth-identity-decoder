@@ -10,16 +10,18 @@
 
   <style>
     :root {
-      --bg:           #FEF7F6;
+      --bg:           #e8ede5;
       --white:        #ffffff;
-      --accent:       #d66f53;
-      --accent-dark:  #b85a40;
-      --accent-light: #fceae5;
-      --text:         #3a2820;
-      --muted:        #a08070;
-      --border:       #eeddd8;
+      --accent:       #3a6645;
+      --accent-dark:  #2d5235;
+      --accent-light: #d0ddd0;
+      --text:         #1a2620;
+      --muted:        #6b7d6b;
+      --border:       #c2d4c2;
       --bubble-in:    #ffffff;
-      --bubble-out:   #d66f53;
+      --bubble-out:   #dce6dc;
+      --header-bg:    #111c16;
+      --header-accent:#8dc4a0;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,8 +44,8 @@
 
     /* ── Header ──────────────────────────────────────────────────────── */
     .header {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
+      background: var(--header-bg);
+      border-bottom: 1px solid #1e3028;
       padding: 14px 20px 12px;
       text-align: center;
       flex-shrink: 0;
@@ -54,7 +56,7 @@
       font-size: 10px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: rgba(255,255,255,0.4);
       font-style: normal;
       margin-bottom: 3px;
     }
@@ -63,7 +65,7 @@
       font-size: 17px;
       font-weight: 500;
       font-style: italic;
-      color: var(--accent);
+      color: var(--header-accent);
       letter-spacing: 0.02em;
     }
 
@@ -80,12 +82,12 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--border);
+      background: rgba(255,255,255,0.18);
       transition: background 0.4s ease, transform 0.3s ease;
     }
 
     .dot.done {
-      background: var(--accent);
+      background: var(--header-accent);
       transform: scale(1.15);
     }
 
@@ -132,14 +134,14 @@
       color: var(--text);
       border-radius: 4px 18px 18px 18px;
       border-left: 3px solid var(--accent);
-      box-shadow: 0 1px 6px rgba(214,111,83,0.10);
+      box-shadow: 0 1px 6px rgba(58,102,69,0.10);
     }
 
     .bubble--in em { font-style: italic; color: var(--accent); }
 
     .bubble--out {
-      background: var(--accent);
-      color: var(--white);
+      background: var(--bubble-out);
+      color: var(--text);
       border-radius: 18px 18px 4px 18px;
       font-style: italic;
     }
@@ -154,7 +156,7 @@
       background: var(--white);
       border-radius: 4px 18px 18px 18px;
       border-left: 3px solid var(--accent);
-      box-shadow: 0 1px 6px rgba(214,111,83,0.10);
+      box-shadow: 0 1px 6px rgba(58,102,69,0.10);
       padding: 14px 18px;
       display: flex;
       align-items: center;
@@ -273,7 +275,7 @@
 
     /* ── Fixed input bar ─────────────────────────────────────────────── */
     .input-bar {
-      background: var(--white);
+      background: var(--bg);
       border-top: 1px solid var(--border);
       padding: 10px 12px;
       padding-bottom: max(10px, env(safe-area-inset-bottom));
