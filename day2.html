@@ -532,9 +532,9 @@ function buildStages() {
       ],
       action: async () => {
         await new Promise(r => setTimeout(r, 1500));
-        await say('Your full Day 2 decode — including what your nervous system is actually protecting you from and what starts to shift it — will be in your inbox within 15 minutes. Make sure we have the right email for you.');
+        await say('Your full Day 2 decode — including what your nervous system is actually protecting you from and what starts to shift it — will be in your inbox within 15 minutes.');
         setDot(3);
-        showEmailCard();
+        await doSubmit();
       },
     },
 
