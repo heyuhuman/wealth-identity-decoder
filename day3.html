@@ -451,12 +451,27 @@
   </div>
 </div>
 
+<!-- ── Training not yet watched ───────────────────────────────────── -->
+<div id="screen-training-lock" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+  <div style="max-width:420px; width:100%;">
+    <div style="font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Wealth Identity Shift &middot; Day 3</div>
+    <div style="font-size:22px; font-weight:500; font-style:italic; color:var(--accent); letter-spacing:0.02em; margin-bottom:28px;">Day 3 Wealth Identity Decoder</div>
+    <div style="width:40px; height:1px; background:var(--border); margin:0 auto 28px;"></div>
+    <div style="font-size:17px; font-weight:500; color:var(--text); line-height:1.5; margin-bottom:20px;">Watch the training first.</div>
+    <div style="font-size:14px; line-height:1.8; color:var(--muted); margin-bottom:24px;">
+      <p>This decode is designed to work alongside the training, not before it. Head here to watch it first &mdash; then come back when you&rsquo;re ready.</p>
+    </div>
+    <a id="training-link" href="#" style="display:inline-block; background:var(--accent); color:white; font-family:'Lora',serif; font-size:14px; letter-spacing:0.03em; padding:13px 32px; border-radius:40px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='var(--accent-dark)'" onmouseout="this.style.background='var(--accent)'">Watch the Day 3 Training &rarr;</a>
+  </div>
+</div>
+
 <!-- ── Script ─────────────────────────────────────────────────────── -->
 <script>
 // ════════════════════════════════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════════════════════════════════
 const FORMSPARK_URL = 'https://submit-form.com/INrD1gMWG';
+const TRAINING_URL  = 'PLACEHOLDER_DAY3_TRAINING_URL';
 const MIN_CHARS     = 40;
 
 const typingMs = txt => Math.min(2400, Math.max(700, txt.length * 26));
@@ -721,12 +736,45 @@ async function submitVerifyCard() {
 
   F.email = email;
 
-  // If name came in via URL param, skip the name stage
-  if (P.name) {
-    F.name = P.name;
-    setTimeout(() => runStage(1), 300);
+  setTimeout(() => showTrainingCheck(), 300);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// TRAINING CHECK
+// ════════════════════════════════════════════════════════════════════
+async function showTrainingCheck() {
+  await say('One quick thing before we dive in — have you watched the Day 3 training yet?');
+  const card = el('div', 'card');
+  card.id = 'training-card';
+  card.innerHTML = `
+    <div class="card-btns">
+      <button class="card-btn" onclick="onTraining(true)">Yes, I've watched it</button>
+      <button class="card-btn-outline" onclick="onTraining(false)">Not yet</button>
+    </div>
+  `;
+  appendCard(card);
+}
+
+function onTraining(watched) {
+  removeCard('training-card');
+  if (watched) {
+    addMsg('out', 'Yes, I’ve watched it.');
+    scrollDown();
+    setTimeout(() => {
+      if (P.name) {
+        F.name = P.name;
+        runStage(1);
+      } else {
+        runStage(0);
+      }
+    }, 400);
   } else {
-    setTimeout(() => runStage(0), 300);
+    addMsg('out', 'Not yet.');
+    scrollDown();
+    setTimeout(() => {
+      document.getElementById('training-link').href = TRAINING_URL;
+      document.getElementById('screen-training-lock').style.display = 'flex';
+    }, 400);
   }
 }
 
