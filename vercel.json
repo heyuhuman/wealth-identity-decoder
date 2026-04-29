@@ -3,6 +3,7 @@
   "rewrites": [
     { "source": "/day1", "destination": "/day1.html" },
     { "source": "/day2", "destination": "/day2.html" },
+    { "source": "/day3", "destination": "/day3.html" },
     { "source": "/",     "destination": "/day1.html" }
   ]
 }

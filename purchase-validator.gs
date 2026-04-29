@@ -6,6 +6,7 @@
  *   Column C (index 2): verified purchaser email
  *   Column D (index 3): day1 submission marker (non-empty = submitted)
  *   Column E (index 4): day2 submission marker (non-empty = submitted)
+ *   Column F (index 5): day3 submission marker (non-empty = submitted)
  */
 
 const SHEET_ID = '1XWMwuwCKOJh9YCk7PVhyV6w4o8E9XDWuyA_YQ_pAWuk';
@@ -30,12 +31,13 @@ function doGet(e) {
       );
 
       if (rowIdx === -1) {
-        result = { valid: false, day1_submitted: false, day2_submitted: false };
+        result = { valid: false, day1_submitted: false, day2_submitted: false, day3_submitted: false };
       } else {
         const row = data[rowIdx];
         const day1_submitted = String(row[3] !== undefined ? row[3] : '').trim() !== '';
         const day2_submitted = String(row[4] !== undefined ? row[4] : '').trim() !== '';
-        result = { valid: true, day1_submitted, day2_submitted };
+        const day3_submitted = String(row[5] !== undefined ? row[5] : '').trim() !== '';
+        result = { valid: true, day1_submitted, day2_submitted, day3_submitted };
       }
 
     } catch (err) {
