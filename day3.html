@@ -573,7 +573,7 @@ function buildStages() {
       action: async () => {
         await new Promise(r => setTimeout(r, 1500));
         await say('Your decode will be in your inbox within 15 minutes. Take it into the rest of your day — this is the close of something real.');
-        showEmailCard();
+        await doSubmit();
       },
     },
 
@@ -890,48 +890,6 @@ async function onSend() {
   scrollDown();
 
   runStage(stage + 1);
-}
-
-// ════════════════════════════════════════════════════════════════════
-// EMAIL CONFIRM CARD
-// ════════════════════════════════════════════════════════════════════
-function showEmailCard() {
-  const card = el('div', 'card');
-  card.id = 'email-card';
-
-  const emailVal = F.email ? esc(F.email) : '';
-  card.innerHTML = `
-    <span class="card-label">Confirm your email</span>
-    <div class="f-group">
-      <label class="f-label">Email</label>
-      <input id="ec-email" type="email" class="f-input${emailVal ? ' pre' : ''}" value="${emailVal}" placeholder="Your email address" autocomplete="email">
-    </div>
-    <button class="card-btn" onclick="submitEmailCard()">Send my decode &rarr;</button>
-    <div class="card-error" id="ec-err">Please enter your email address.</div>
-  `;
-
-  appendCard(card);
-
-  const inp = document.getElementById('ec-email');
-  if (inp) inp.addEventListener('focus', () => inp.classList.remove('pre'));
-
-  scrollDown();
-}
-
-async function submitEmailCard() {
-  const email = v('ec-email').trim();
-  const errEl = document.getElementById('ec-err');
-
-  if (!email) {
-    errEl.classList.add('show');
-    return;
-  }
-  errEl.classList.remove('show');
-
-  F.email = email;
-  removeCard('email-card');
-
-  await doSubmit();
 }
 
 // ════════════════════════════════════════════════════════════════════
